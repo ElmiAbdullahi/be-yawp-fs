@@ -10,13 +10,19 @@ const mockUser = {
   email: 'test@example.com',
   password: '12345',
 };
+const registerAndLogin = async () => {
+  const agent = request.agent(app);
+  const user = await UserService.create(mockUser);
+
+  await agent
+    .post('/api/v1/users/sessions')
+    .send({ email: mockUser.email, password: mockUser.password });
+  return [agent, user];
+};
 
 describe('restaurant routes', () => {
   beforeEach(() => {
     return setup(pool);
-  });
-  afterAll(() => {
-    pool.end();
   });
 
   it('GET api/v1/restaurants should return a list of restaurants', async () => {
@@ -60,7 +66,7 @@ describe('restaurant routes', () => {
     `);
   });
 
-  it('GET api/v1/restaurant/:id should return the restaurant with nested comments', async () => {
+  it('GET api/v1/restaurant/:id should return the restaurant with nested reviews', async () => {
     const resp = await request(app).get('/api/v1/restaurants/1');
     expect(resp.status).toBe(200);
     expect(resp.body).toMatchInlineSnapshot(`
@@ -74,13 +80,29 @@ describe('restaurant routes', () => {
           Object {
             "detail": "Best restaurant ever!",
             "id": "1",
-            "restaurant_id": "1",
             "stars": 5,
-            "user_id": "1",
           },
         ],
         "website": "http://www.PipsOriginal.com",
       }
     `);
+  });
+
+  it('POST /api/v1/restaurants/:id/reviews should create a new review when logged in', async () => {
+    const [agent] = await registerAndLogin();
+    const resp = await agent
+      .post('/api/v1/restaurants/1/reviews')
+      .send({ stars: 2, detail: 'This is a new review' });
+    expect(resp.status).toBe(200);
+    expect(resp.body).toMatchInlineSnapshot(`
+      Object {
+        "detail": "This is a new review",
+        "id": "4",
+        "stars": 2,
+      }
+    `);
+  });
+  afterAll(() => {
+    pool.end();
   });
 });
