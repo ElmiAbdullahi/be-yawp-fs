@@ -24,6 +24,9 @@ describe('restaurant routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
+  afterAll(() => {
+    pool.end();
+  });
 
   it('GET api/v1/restaurants should return a list of restaurants', async () => {
     const resp = await request(app).get('/api/v1/restaurants');
@@ -80,7 +83,9 @@ describe('restaurant routes', () => {
           Object {
             "detail": "Best restaurant ever!",
             "id": "1",
+            "restaurant_id": "1",
             "stars": 5,
+            "user_id": "1",
           },
         ],
         "website": "http://www.PipsOriginal.com",
@@ -98,11 +103,21 @@ describe('restaurant routes', () => {
       Object {
         "detail": "This is a new review",
         "id": "4",
+        "restaurant_id": "1",
         "stars": 2,
+        "user_id": "4",
       }
     `);
   });
-  afterAll(() => {
-    pool.end();
+
+  it('DELETE /api/v1/reviews/:id should delete a review', async () => {
+    const [agent] = await registerAndLogin();
+    await agent
+      .post('/api/v1/restaurants/1/reviews')
+      .send({ stars: 4, detail: 'this should delete' });
+    // console.log('review.body', review.body);
+    const resp = await agent.delete('/api/v1/reviews/4');
+
+    expect(resp.status).toBe(200);
   });
 });
