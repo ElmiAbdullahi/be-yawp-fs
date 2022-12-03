@@ -87,6 +87,20 @@ describe('restaurant routes', () => {
             "stars": 5,
             "user_id": "1",
           },
+          Object {
+            "detail": "Terrible service :(",
+            "id": "2",
+            "restaurant_id": "1",
+            "stars": 1,
+            "user_id": "2",
+          },
+          Object {
+            "detail": "It was fine.",
+            "id": "3",
+            "restaurant_id": "1",
+            "stars": 4,
+            "user_id": "3",
+          },
         ],
         "website": "http://www.PipsOriginal.com",
       }
